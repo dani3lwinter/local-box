@@ -17,8 +17,14 @@ notSupported = function(req, res, next) {
 router.route('/')
 .get(function(req, res, next) {
     File.find({})
-    .then((notes) => {
-        res.json(notes);
+    .then((files) => {
+        // remove authTag from the respond before sending
+        //const newArray = files.map(({authTag, ...rest}) => rest)
+        //files.toObject();
+        //files = files.forEach(file => {delete file.authTag}); 
+ 
+        // send the files
+        res.json(files);
     }, (err) => next(err))
     .catch((err) => next(err));
 })
@@ -59,17 +65,21 @@ router.route('/upload')
 
 
 
-router.post("/decrypt/:fileName", (req, res, next) => {
-    console.log("Getting file:", req.params.fileName);
-    const buffer = getEncryptedFile(path.join("./uploads", req.params.fileName), req.body.password);
-    const readStream = new stream.PassThrough();
-    readStream.end(buffer);
-    res.writeHead(200, {
-        "Content-disposition": "attachment; filename=" + req.params.fileName,
-        "Content-Type": "application/octet-stream",
-        "Content-Length": buffer.length
-    });
-    res.end(buffer);
+router.post("/decrypt/:filename", async (req, res, next) => {
+    try {
+        const buffer = await getEncryptedFile( req.body.id, req.body.password);
+        const readStream = new stream.PassThrough();
+        readStream.end(buffer);
+        res.writeHead(200, {
+            "Content-disposition": "attachment; file=" + req.params.filename,
+            "Content-Type": "application/octet-stream",
+            "Content-Length": buffer.length
+        });
+        res.end(buffer);
+    } catch (error) {
+        next(error);
+    }
+    
 });
 
 module.exports = router;

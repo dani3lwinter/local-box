@@ -4,7 +4,7 @@ const path = require("path");
 const File = require('../models/File');
 
 // The algorithm method to encrypt all the files
-const CryptoAlgorithm = "aes-256-ctr";
+const CryptoAlgorithm = "aes-256-gcm";
 
 /**
  * Gets buffer of a file and
@@ -19,7 +19,8 @@ function encrypt(algorithm, buffer, password) {
     var iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     const encrypted = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-    return encrypted;
+    console.log('FILE AUTH: ' +cipher.getAuthTag());
+    return [encrypted, cipher.getAuthTag()] ;
 };
 
 /**
@@ -29,12 +30,14 @@ function encrypt(algorithm, buffer, password) {
  * @param {Buffer} buffer       A Buffer of the encrypted file
  * @param {String} password     password used to encrypt the file
  */
-function decrypt(algorithm, buffer, password) {
+function decrypt(algorithm, buffer, password, authTag) {
     var key = crypto.createHash('sha256').update(password).digest('base64').substr(0, 32);
     const iv = buffer.slice(0, 16);         // Get the iv: the first 16 bytes
     const encrypted = buffer.slice(16) ;    // The rest of the buffer is the actual file    
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
+    decipher.setAuthTag(authTag);
     const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    //console.log('FILE AUTH: ' +decipher.getAuthTag());
     return decrypted;
 }
 
@@ -49,13 +52,15 @@ function saveFileFromMemory(req, res, next){
     // For save each file in req.files to disk
     req.files.forEach( (file) => {
 
-        var fileData;
+        var fileData, fileAuthTag;
         if( !req.body.encrypt || req.body.encrypt==='false'){
             // save the buffer without encrypting
             fileData = file.buffer;
+            fileAuthTag = '';
         } else{ 
             // encrypt the file buffer before saving
-            fileData = encrypt(CryptoAlgorithm, file.buffer, req.body.password);    
+            [fileData, fileAuthTag] = encrypt(CryptoAlgorithm, file.buffer, req.body.password);   
+            file.authTag = fileAuthTag; // add authTag to req (later it will be saved to mongoDB)
         }
             
         var filePath = path.join("./uploads", file.originalname);
@@ -113,6 +118,9 @@ const saveFilesRecord = function(req, res, next){
             encrypted:      req.body.encrypt,
             destroyAt:      destroyAt
         }
+        if(req.files[i].authTag){
+            fileRecords[i].authTag = req.files[i].authTag;
+        }
     }
 
     // save the records to mongoDB and send it back to client
@@ -127,10 +135,14 @@ const saveFilesRecord = function(req, res, next){
  * Gets a path of an encrypted file and its password
  * and returns a buffer of the original file (after dencryption) 
  */
-function getEncryptedFile(filePath, password){
+async function getEncryptedFile(fileId, password){
+
+    file = await File.findById(fileId);
+    const filePath = path.join("./uploads", file.originalname);
     const encrypted = fs.readFileSync(filePath);
-    const buffer = decrypt(CryptoAlgorithm, encrypted, password);
-    return buffer;
+    const buffer = decrypt(CryptoAlgorithm, encrypted, password, file.authTag);
+    return buffer;    
+
 }
 
 

@@ -123,11 +123,12 @@ class Files extends Component {
 
     this.state = {
       downloadDialogOpen: false,
+      fileIdToDownload:   '',
       filenameToDownload: '',
 
-      deleteDialogOpen: false,
-      filenameToDelete: '',
-      fileIdToDelete: '',
+      deleteDialogOpen:   false,
+      filenameToDelete:   '',
+      fileIdToDelete:     '',
 
       uploadDialogOpen: false,
     }
@@ -191,8 +192,9 @@ class Files extends Component {
    * Handler to open DownloadDialog component
    * (When the lock icon of an encrypted file is clicked)
    */
-  openDownloadDialog = (filename) => () =>{
+  openDownloadDialog = (filename, fileId) => () =>{
     this.setState({ 
+      fileIdToDownload:   fileId,
       filenameToDownload: filename,
       downloadDialogOpen: true
     });
@@ -246,6 +248,7 @@ class Files extends Component {
         <form method="post"
               action={ baseUrl + 'api/files/decrypt/' + this.state.filenameToDownload }>
           <DialogContent>
+            <input type='text' name='id' value={this.state.fileIdToDownload} hidden/>
             <TextField
               autoFocus
               margin="dense"
@@ -310,7 +313,7 @@ class Files extends Component {
                 <CardActions disableSpacing>
                   {file.encrypted
                     ? <IconButton size="small" className={classes.lockIcon}
-                      onClick={this.openDownloadDialog(file.originalname)}>
+                      onClick={this.openDownloadDialog(file.originalname, file._id)}>
                       <LockIcon />
                     </IconButton>
                     : <IconButton component='a' size="small" href={baseUrl + file.path}>

@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 // Setup File schema
-var bookSchema = mongoose.Schema({
+var fileSchema = mongoose.Schema({
         originalname: {
             type: String,
             required: true
@@ -22,6 +22,10 @@ var bookSchema = mongoose.Schema({
             type: Boolean,
             default: false
         },
+        authTag: {
+            type: Buffer,
+            required: false
+        },
         destroyAt: {
             type: Date,
             required: false
@@ -30,4 +34,13 @@ var bookSchema = mongoose.Schema({
     { timestamps: true });
 
 // Export File model
-var File = module.exports = mongoose.model('File', bookSchema);
+
+// Overide toJSON 
+fileSchema.methods.toJSON = function() {
+    var obj = this.toObject();
+    // remove authTag property so it wont get to the client
+    delete obj.authTag;
+    return obj;
+}
+
+var File = module.exports = mongoose.model('File', fileSchema);
