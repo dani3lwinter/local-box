@@ -10,8 +10,8 @@ var bookSchema = mongoose.Schema({
             type: String,
             required: true
         },
-        destroyAt: {
-            type: Date,
+        selfDestruct: {
+            type: Number,
             default: null
         },
         isMainNote: {

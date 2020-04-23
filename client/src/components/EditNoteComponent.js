@@ -79,7 +79,7 @@ class EditNote extends Component{
 
         this.state = {
             deleteDialogOpen: false,
-            selfDestruct: '0',
+            selfDestruct: null,
             title: '',
             content:'',
         }
@@ -158,15 +158,15 @@ class EditNote extends Component{
                         onClick={this.onClickSave}>Save</Button>
                     <div className={classes.space}/>
                     <FormControl margin='dense' variant="outlined" className={classes.formControl}>
-                        <InputLabel id="self-destruct">Self Destruct</InputLabel>
+                        {/* <InputLabel id="destruct-label">Self Destruct</InputLabel> */}
                         <Select
-                            labelId="destructt-label"
+                            labelId="destruct-label"
                             id="destructt"
                             value={this.state.selfDestruct}
                             onChange={this.onChangeSelfDestruct}
-                            label="Self Destruct"
+                            //label="Self Destruct"
                         >
-                            <MenuItem value='0'>Never</MenuItem>
+                            <MenuItem value={null}>Never</MenuItem>
                             <MenuItem value='1'>1 Hour</MenuItem>
                             <MenuItem value='8'>8 Hours</MenuItem>
                             <MenuItem value='24'>24 Hours</MenuItem>

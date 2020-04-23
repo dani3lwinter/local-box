@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const fs = require('fs')
+const fs = require('fs');
 var path = require('path');
 var multer = require('multer');
 const stream = require('stream');
@@ -18,12 +18,6 @@ router.route('/')
 .get(function(req, res, next) {
     File.find({})
     .then((files) => {
-        // remove authTag from the respond before sending
-        //const newArray = files.map(({authTag, ...rest}) => rest)
-        //files.toObject();
-        //files = files.forEach(file => {delete file.authTag}); 
- 
-        // send the files
         res.json(files);
     }, (err) => next(err))
     .catch((err) => next(err));

@@ -69,6 +69,9 @@ const styles = (theme) => ({
   },
   invisibleFrame: {
     display: 'none'
+  },
+  destructText: {
+    color: theme.palette.error.light,
   }
 });
 
@@ -285,6 +288,22 @@ class Files extends Component {
       hour: 'numeric', minute: 'numeric',
       hour12: false,
     };
+    function timeToLive(destroyAt){
+
+      // time untill destruct in miniutes;
+      var diff = (Date.parse(destroyAt) - Date.now()) / 60000
+      var hours = diff/60, mins = Math.round(diff%60);
+      if(hours <= 1){
+        return mins + 'min';
+      }
+      else if(hours >= 11.5 || mins === 0 ){ // the time is more then 11 hours
+        return Math.round(hours) + ' hours';
+      }
+      else{
+        return Math.floor(hours) + 'h ' + mins + 'min'
+      }
+    }
+
     return (
       <Grid container spacing={3}>
         {props.items.map(file => {
@@ -331,6 +350,10 @@ class Files extends Component {
 
                 </CardActions>
               </Card>
+              <Typography variant="caption" className={classes.destructText} >
+                {file.destroyAt ? 'Delete in '+timeToLive(file.destroyAt) :''}
+              </Typography>
+            
             </Grid>
           );
         })}

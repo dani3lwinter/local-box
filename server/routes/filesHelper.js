@@ -104,10 +104,10 @@ const saveFilesRecord = function(req, res, next){
 
     // Calculate destroyAt date
     const hoursUntillDestruct = req.body.selfDestruct;
-    var destroyAt = hoursUntillDestruct
-        ? new Date(Date.now() + (hoursUntillDestruct*60*60*1000))
-        : '';
 
+    var destroyAt = new Date(Date.now() + (hoursUntillDestruct*60*60*1000));
+
+        console.log(destroyAt)
     // Create all the records
     for (var i=0; i<fileRecords.length; i++) {
         fileRecords[i] = {
@@ -116,10 +116,12 @@ const saveFilesRecord = function(req, res, next){
             size:           req.files[i].size,
             mimetype:       req.files[i].mimetype,
             encrypted:      req.body.encrypt,
-            destroyAt:      destroyAt
         }
         if(req.files[i].authTag){
             fileRecords[i].authTag = req.files[i].authTag;
+        }
+        if(hoursUntillDestruct && parseInt(hoursUntillDestruct) !== -1){
+            fileRecords[i].destroyAt = destroyAt;
         }
     }
 

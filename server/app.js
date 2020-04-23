@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 var config = require('./config');
 var cors = require('cors');
 var helmet = require('helmet')
+var cron = require('node-cron');
+const {destructOutdated} = require('./destructorService')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,6 +20,15 @@ const connect = mongoose.connect(config.mongoUrl);
 connect.then((db) => {
   console.log("Connected correctly to server");
 }, (err) => { console.log(err); });
+
+
+cron.schedule('*/15 * * * *', () => {
+  destructOutdated()
+  .then((report) => {console.log(report)})
+  .catch(err => {console.log(err)});
+});
+
+
 
 var app = express();
 

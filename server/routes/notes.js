@@ -25,9 +25,10 @@ router.post('/', function(req, res, next) {
     var newNote = {
         title: req.body.title,
         content: req.body.content,
-        isMainNote: req.body.isMainNote
+        isMainNote: req.body.isMainNote,
+        selfDestruct: req.body.selfDestruct
     }
-    newNote.destroyAt = req.body.selfDestruct ? new Date(Date.now() + (req.body.selfDestruct*60*60*1000)) : null ;
+    // newNote.destroyAt = req.body.selfDestruct ? new Date(Date.now() + (req.body.selfDestruct*60*60*1000)) : null ;
 
     Note.create(newNote)
     .then((dish) => {

@@ -27,18 +27,37 @@ const useStyles = makeStyles(theme => ({
       bottom: 56 + theme.spacing(2),
       right: theme.spacing(2),
     },
+    destructText: {
+      color: theme.palette.error.light,
+    }
   }));
 
 const NotesList = ({notes}) => {
   let match = useRouteMatch();
+  const classes = useStyles();
 
-  const dateFormatOptions = {
+  const timeFormater = new Intl.DateTimeFormat('default', {
     year: 'numeric', month: 'numeric', day: 'numeric',
     hour: 'numeric', minute: 'numeric', 
     hour12: false,
-  };
+  });
   const notesItems = notes.items.filter(note => !note.isMainNote);
 
+  function timeToLive(updatedAt, hoursTillDestruct){
+    const destroyAt = new Date(Date.parse(updatedAt) + hoursTillDestruct*60*60*1000);
+    // time untill destruct in miniutes;
+    var diff = (destroyAt - Date.now()) / 60000
+    var hours = diff/60, mins = Math.round(diff%60);
+    if(hours <= 1){
+      return mins + 'min';
+    }
+    else if(hours >= 11.5 || mins === 0 ){ // the time is more then 11 hours
+      return Math.round(hours) + ' hours';
+    }
+    else{
+      return Math.floor(hours) + 'h ' + mins + 'min'
+    }
+  }
   return(
     <List>
       { notesItems.map(note => (
@@ -46,15 +65,17 @@ const NotesList = ({notes}) => {
           component={RouterLink} to={`${match.path}/${note._id}`}>
           <ListItemText
           primary={note.title}
-          secondary={
-            new Intl.DateTimeFormat('default', dateFormatOptions)
-            .format(new Date(Date.parse(note.updatedAt)))
-          }
+          secondary={timeFormater.format(new Date(Date.parse(note.updatedAt)))}
           />
           <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="edit">
+            {/* <IconButton edge="end" aria-label="edit">
               <EditIcon />
-            </IconButton>
+            </IconButton> */}
+            <Typography variant="caption" className={classes.destructText} >
+              Delete in<br/>
+              {timeToLive(note.updatedAt, note.selfDestruct)}
+            </Typography>
+            
           </ListItemSecondaryAction>
         </ListItem>
         )) } 

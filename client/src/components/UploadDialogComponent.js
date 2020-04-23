@@ -65,6 +65,7 @@ class UploadDialog extends Component{
     }
 
     handleChange = ({ target }) => {
+        console.log(target)
         const { formValues } = this.state;
         if(target.name === 'encryptChecked')
             formValues[target.name] = target.checked;
@@ -72,7 +73,7 @@ class UploadDialog extends Component{
             formValues[target.name] = target.files;
         else
             formValues[target.name] = target.value;
-        
+        console.log(formValues[target.name])
         this.setState({ formValues });
         this.handleValidation(target);
 
@@ -182,14 +183,15 @@ class UploadDialog extends Component{
                             "If you lose the password, you won't be able to accsess the file"}          
                     />
                     <FormControl   margin='dense' variant="filled" fullWidth className={classes.selfDestruct}>
-                        <InputLabel id="self-destruct">Self Destruct</InputLabel>
+                        <InputLabel id="destruct-label-2">Self Destruct</InputLabel>
                         <Select
-                            labelId="destruct-label"
-                            id="destruct"
+                            labelId="destruct-label-2"
+                            id="selfDestruct"
+                            name="selfDestruct"
                             value={formValues.selfDestruct}
                             onChange={this.handleChange}
                             label="Self Destruct" >
-                            <MenuItem value='0'>Never</MenuItem>
+                            <MenuItem value='-1'>Never</MenuItem>
                             <MenuItem value='1'>1 Hour</MenuItem>
                             <MenuItem value='8'>8 Hours</MenuItem>
                             <MenuItem value='24'>24 Hours</MenuItem>
