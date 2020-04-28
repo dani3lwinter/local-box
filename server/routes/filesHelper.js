@@ -19,7 +19,6 @@ function encrypt(algorithm, buffer, password) {
     var iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     const encrypted = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-    console.log('FILE AUTH: ' +cipher.getAuthTag());
     return [encrypted, cipher.getAuthTag()] ;
 };
 
@@ -37,7 +36,6 @@ function decrypt(algorithm, buffer, password, authTag) {
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
     decipher.setAuthTag(authTag);
     const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
-    //console.log('FILE AUTH: ' +decipher.getAuthTag());
     return decrypted;
 }
 
@@ -99,15 +97,12 @@ function saveFileFromMemory(req, res, next){
  * files are saved and send the new records back to the client
  */
 const saveFilesRecord = function(req, res, next){
-
     const fileRecords = new Array(req.files.length)
 
     // Calculate destroyAt date
     const hoursUntillDestruct = req.body.selfDestruct;
-
     var destroyAt = new Date(Date.now() + (hoursUntillDestruct*60*60*1000));
 
-        console.log(destroyAt)
     // Create all the records
     for (var i=0; i<fileRecords.length; i++) {
         fileRecords[i] = {
@@ -134,17 +129,20 @@ const saveFilesRecord = function(req, res, next){
 }
 
 /**
- * Gets a path of an encrypted file and its password
- * and returns a buffer of the original file (after dencryption) 
+ * Gets id of an encrypted file and its password
+ * and returns a buffer of the original file (after decryption) 
  */
 async function getEncryptedFile(fileId, password){
-
+    // find the file in the DB
     file = await File.findById(fileId);
+
+    // get the ecrypted file from system storage
     const filePath = path.join("./uploads", file.originalname);
     const encrypted = fs.readFileSync(filePath);
+
+    //return decrypted buffer of the file
     const buffer = decrypt(CryptoAlgorithm, encrypted, password, file.authTag);
     return buffer;    
-
 }
 
 

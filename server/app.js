@@ -8,27 +8,25 @@ var config = require('./config');
 var cors = require('cors');
 var helmet = require('helmet')
 var cron = require('node-cron');
-const {destructOutdated} = require('./destructorService')
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const {destructOutdated} = require('./destructorService');
 var notesRouter = require('./routes/notes');
 var filesRouter = require('./routes/files');
 
 // Connect to mongoDB
+mongoose.set('useUnifiedTopology', true);
+mongoose.set('useNewUrlParser', true);
 const connect = mongoose.connect(config.mongoUrl);
 connect.then((db) => {
   console.log("Connected correctly to server");
 }, (err) => { console.log(err); });
 
 
+// run self destruct service every 15 minutes
 cron.schedule('*/15 * * * *', () => {
   destructOutdated()
   .then((report) => {console.log(report)})
   .catch(err => {console.log(err)});
 });
-
-
 
 var app = express();
 
@@ -40,8 +38,8 @@ app.use(helmet())
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(cookieParser());
+//app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Config Cross-origin
@@ -59,10 +57,9 @@ app.use(cors({
   }
 }));
 
-app.use('/', indexRouter);
+
 app.use('/api/notes', notesRouter);
 app.use('/api/files', filesRouter);
-app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

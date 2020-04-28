@@ -1,6 +1,7 @@
 server/node_modules
 client/node_modules
 server/uploads
+client/build
 backup
 mongoDB
 local-box.zip

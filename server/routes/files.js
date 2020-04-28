@@ -1,41 +1,40 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const fs = require('fs');
-var path = require('path');
-var multer = require('multer');
+const path = require('path');
+const multer = require('multer');
 const stream = require('stream');
-var {saveFileFromMemory, getEncryptedFile} = require('./filesHelper');
 const File = require('../models/File');
+const {saveFileFromMemory, getEncryptedFile} = require('./filesHelper');
 
-notSupported = function(req, res, next) {
-    res.statusCode = 403;
-    res.end( req.method + ' operation not supported on ' + req.originalUrl);
-}
+// multer config to use memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-
-/* GET all files (/api/files)  */
-router.route('/')
-.get(function(req, res, next) {
+/* Serve all files records from the DB ( GET /api/files)  */
+router.get('/', function(req, res, next) {
     File.find({})
     .then((files) => {
         res.json(files);
     }, (err) => next(err))
     .catch((err) => next(err));
-})
-.post(notSupported)     /* POST not supported on /api/files */
-.put(notSupported)      /* PUT not supported on /api/files */
-.delete(notSupported);  /* DELETE not supported on /api/files */
+});
 
+// handles file uploads
+router.post('/upload', upload.array('files'), saveFileFromMemory);
 
-router.route('/download/:fileID')
-.get(function(req, res, next){
+// Serve non-ecnrypted file (GET /api/file/download/[fileID])
+router.get('/download/:fileID', function(req, res, next){
     File.findById(req.params.fileID) 
     .then((file) => {
         res.json(file);
     }, (err) => next(err))
     .catch((err) => next(err));
-})
-.delete(function(req, res, next){
+});
+
+// Delete a file from storage
+// and its record from the DB (DELETE /api/file/download/[fileID])
+router.delete('/download/:fileID', function(req, res, next){
     File.findByIdAndDelete(req.params.fileID)           // delete the file from mondoDB
     .then((deletedFile) => {
         pathToDelete = path.join(__dirname, '../', deletedFile.path);
@@ -44,36 +43,25 @@ router.route('/download/:fileID')
         res.json(deletedFile);
     }, (err) => next(err))
     .catch((err) => next(err));
-})
-.post(notSupported) // GET not supported 
-.put(notSupported)  // PUT not supported 
+});
 
-
-
-var storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// handles file uploads
-router.route('/upload')
-.post(upload.array('files'), saveFileFromMemory);
-
-
-
+// Serve encrypted files
+// the request should indlude json with id of the file
+// to serve and password to decrypt with
 router.post("/decrypt/:filename", async (req, res, next) => {
     try {
-        const buffer = await getEncryptedFile( req.body.id, req.body.password);
+        const buffer = await getEncryptedFile(req.body.id, req.body.password);
         const readStream = new stream.PassThrough();
         readStream.end(buffer);
         res.writeHead(200, {
-            "Content-disposition": "attachment; file=" + req.params.filename,
+            "Content-disposition": 'attachment; filename=\"' + req.params.filename + '\"',
             "Content-Type": "application/octet-stream",
             "Content-Length": buffer.length
         });
         res.end(buffer);
     } catch (error) {
         next(error);
-    }
-    
+    }   
 });
 
 module.exports = router;
