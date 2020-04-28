@@ -2,7 +2,9 @@ import React, { Component, Fragment } from 'react';
 import Typography from '@material-ui/core/Typography'
 import Container from '@material-ui/core/Container';
 import { withStyles } from '@material-ui/core/styles';
-import UploadDialog from './UploadDialogComponent'
+import UploadDialog from './Dialogs/UploadDialog';
+import DeleteDialog from './Dialogs/DeleteDialog';
+import DownloadDialog from './Dialogs/DownloadDialog';
 import { connect } from "react-redux";
 import { postFiles, deleteFile, fetchFiles } from '../redux/ActionCreators/filesActions'
 import { baseUrl } from '../baseUrl';
@@ -23,12 +25,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
+
 
 const FILE_KNOWN_EXT = ['ACC', 'AE', 'AI', 'AN', 'AVI', 'BMP', 'CSV', 'DAT', 'DGN', 'DOC', 'DOCH', 'DOCM', 'DOCX', 'DOTH', 'DW', 'DWFX', 'DWG', 'DXF', 'DXL', 'EML', 'EPS', 'F4A', 'F4V', 'FILE', 'FLV', 'FS', 'GIF', 'HTML', 'IND', 'JPEG', 'JPG', 'JPP', 'Log', 'LR', 'M4V', 'MBOX', 'MDB', 'MIDI', 'MKV', 'MOV', 'MP3', 'MP4', 'MPEG', 'MPG', 'MPP', 'MPT', 'MPW', 'MPX', 'MSG', 'ODS', 'OGA', 'OGG', 'OGV', 'ONE', 'OST', 'PDF', 'PHP', 'PNG', 'POT', 'POTH', 'POTM', 'POTX', 'PPS', 'PPSX', 'PPT', 'PPTH', 'PPTM', 'PPTX', 'PREM', 'PS', 'PSD', 'PST', 'PUB', 'PUBH', 'PUBM', 'PWZ', 'RAR', 'READ', 'RP', 'RTF', 'SQL', 'SVG', 'SWF', 'TIF', 'TIFF', 'TXT', 'URL', 'VCF', 'VDX', 'VOB', 'VSD', 'VSS', 'VST', 'VSX', 'VTX', 'WAV', 'WDP', 'WEBM', 'WMA', 'WMV', 'XD', 'XLS', 'XLSM', 'XLSX', 'XML', 'ZIP'];
 
@@ -85,35 +82,7 @@ const mapStateToProps = state => ({
   files: state.files
 });
 
-/**
- * Component that renders a dialog 
- */
-function DeleteDialog(props) {
-  return (
-    <Dialog
-      open={props.open}
-      onClose={props.handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="dialog-title"> {"Delete this file?"}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="dialog-description">
-          Are you sure you want to delete the file "{props.filename}"?
-            </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={props.handleClose} color="primary">
-          Cancel
-          </Button>
-        <Button onClick={props.handleDelete} color="primary" autoFocus>
-          Delete
-          </Button>
-      </DialogActions>
-    </Dialog>
-  );
 
-}
 
 /**
  * Class component for the 'Files' page,
@@ -125,16 +94,43 @@ class Files extends Component {
     super(props);
 
     this.state = {
-      downloadDialogOpen: false,
-      fileIdToDownload:   '',
-      filenameToDownload: '',
+      downloadDialog: {
+        open: false,
+        handleClose: this.closeDialog('downloadDialog'),
+        fileId:   '',
+        filename: '',
+      },
 
-      deleteDialogOpen:   false,
-      filenameToDelete:   '',
-      fileIdToDelete:     '',
+      deleteDialog: {
+        open: false,
+        handleClose: this.closeDialog('deleteDialog'),
+        handleDelete: this.props.deleteFile,
+        fileId:   '',
+        filename: '',
+      },
 
-      uploadDialogOpen: false,
+      uploadDialog: {
+        open: false,
+        handleClose: this.closeDialog('uploadDialog'),
+        postFiles: this.props.postFiles
+      },
+
     }
+  }
+
+  /**
+   * A function that gets a dialog name and returns
+   * a funciton that closes that dialog
+   */
+  closeDialog = (dialogName) => () => {
+    this.setState(state => {
+      return {
+        [dialogName]: {
+          ...state[dialogName],
+          open: false,
+        }
+      }
+    });
   }
 
   componentDidMount() {
@@ -142,53 +138,36 @@ class Files extends Component {
     this.props.fetchFiles()
   }
 
-
   /**
    * Handler to open UploadDialog component
    * (When UPLOAD FILES is clicked)
    */
   openUploadDialog = () => {
-    this.setState({ uploadDialogOpen: true });
-  }
-
-  /**
-   * Handler to close UploadDialog component
-   */
-  closeUploadDialog = () => {
-    this.setState({ uploadDialogOpen: false });
+    this.setState(state => {
+      return {
+        uploadDialog: {
+          ...state.uploadDialog,
+          open: true,
+        }
+      }
+    });
   }
 
   /**
    * Handler to open DeleteDialog component
    * (When the trash can icon is clicked)
    */
-  openDeleteDialog = (filename, id) => (event) => {
-    this.setState({
-      deleteDialogOpen: true,
-      filenameToDelete: filename,
-      fileIdToDelete: id
+  openDeleteDialog = (filename, fileId) => () => {
+    this.setState(state => {
+      return {
+        deleteDialog: {
+          ...state.deleteDialog,
+          open:     true,
+          fileId:   fileId,
+          filename: filename,
+        }
+      }
     });
-  };
-
-  /**
-   * Handler to close DeleteDialog component
-   */
-  closeDeleteDialog = () => {
-    this.setState({
-      deleteDialogOpen: false,
-      filenameToDelete: '',
-      fileIdToDelete: null,
-    });
-  };
-
-  /**
-   * Handler fot DELETE button on the DeleteDialog
-   */
-  handleDelete = () => {
-    // When the user agree to delete a file,
-    // an action deleteFile is dispatched and the dialog closes
-    this.props.deleteFile(this.state.fileIdToDelete)
-    this.closeDeleteDialog()
   };
 
   /**
@@ -196,20 +175,18 @@ class Files extends Component {
    * (When the lock icon of an encrypted file is clicked)
    */
   openDownloadDialog = (filename, fileId) => () =>{
-    this.setState({ 
-      fileIdToDownload:   fileId,
-      filenameToDownload: filename,
-      downloadDialogOpen: true
+    this.setState(state => {
+      return {
+        downloadDialog: {
+          ...state.downloadDialog,
+          open:     true,
+          fileId:   fileId,
+          filename: filename,
+        }
+      }
     });
   }
 
-  /**
-   * Handler to open DownloadDialog component
-   * (When the lock icon of an encrypted file is clicked)
-   */
-  closeDownloadDialog = () => {
-    this.setState({  downloadDialogOpen: false });
-  }
 
   /**
    * Gets a file name and returns a path for an image
@@ -241,47 +218,13 @@ class Files extends Component {
   }
 
   /**
-   * Component that renders a dialog 
-   */
-  DownloadDialog = (props) => {
-    return (
-      <Dialog open={this.state.downloadDialogOpen}
-              onClose={this.closeDownloadDialog}>
-        <DialogTitle id="download-dialog-title">Download Encrypted File</DialogTitle>
-        <form method="post"
-              action={ baseUrl + 'api/files/decrypt/' + this.state.filenameToDownload }>
-          <DialogContent>
-            <input type='text' name='id' value={this.state.fileIdToDownload} hidden/>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              fullWidth
-            />
-            <DialogContentText>
-              If you enter the wrong password, the downloaded file will be corrupted.
-          </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.closeDownloadDialog} color="primary">
-              Cancel
-          </Button>
-            <Button type="submit" onClick={this.closeDownloadDialog} color="primary">
-              Download
-          </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    );
-  }
-
-  /**
    * Component that renders the files grid
    */
   FilesGrid = (props) => {
+
+    if(props.isLoading){
+        return <LinearProgress />
+    }
     const { classes } = this.props;
     const dateFormatOptions = {
       year: 'numeric', month: 'numeric', day: 'numeric',
@@ -329,6 +272,7 @@ class Files extends Component {
                   </CardActionArea>
                 </Tooltip>
                 <Divider />
+
                 <CardActions disableSpacing>
                   {file.encrypted
                     ? <IconButton size="small" className={classes.lockIcon}
@@ -347,9 +291,10 @@ class Files extends Component {
                     onClick={this.openDeleteDialog(file.originalname, file._id)}>
                     <DeleteIcon />
                   </IconButton>
-
                 </CardActions>
+
               </Card>
+              
               <Typography variant="caption" className={classes.destructText} >
                 {file.destroyAt ? 'Delete in '+timeToLive(file.destroyAt) :''}
               </Typography>
@@ -371,19 +316,13 @@ class Files extends Component {
           startIcon={<CloudUploadIcon />} className={classes.uploadFilesButton}>
           Upload Files
         </Button>
-        {this.props.files.isLoading ? <LinearProgress /> : <this.FilesGrid
+        <this.FilesGrid
+          isLoading={this.props.files.isLoading}
           items={this.props.files.items}
-          classes={classes} />}
-        <this.DownloadDialog />
-        <DeleteDialog filename={this.state.filenameToDelete}
-          open={this.state.deleteDialogOpen}
-          handleClose={this.closeDeleteDialog}
-          handleDelete={this.handleDelete} />
-        <UploadDialog
-          open={this.state.uploadDialogOpen}
-          handleClose={this.closeUploadDialog}
-          handleSubmit={this.onChangeUpload}
-          postFiles={this.props.postFiles} />
+          classes={classes} />
+        <DownloadDialog {...this.state.downloadDialog}/>
+        <DeleteDialog   {...this.state.deleteDialog}  />
+        <UploadDialog   {...this.state.uploadDialog}  />
       </Container>
     );
   }

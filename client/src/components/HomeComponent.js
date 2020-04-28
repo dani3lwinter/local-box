@@ -84,7 +84,7 @@ class Home extends Component{
 	};
 
 	isLoading(){
-		return (this.props.notes.isLoading == undefined || this.props.notes.isLoading);
+		return (this.props.notes.isLoading === undefined || this.props.notes.isLoading);
 	}
 	render() {
 		const { classes } = this.props;
