@@ -23,6 +23,8 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import CloseIcon from '@material-ui/icons/Close';
 
+import { Link as RouterLink, withRouter } from 'react-router-dom';
+import HomeIcon from '@material-ui/icons/Home';
 
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
@@ -49,17 +51,7 @@ const useStyles = makeStyles(theme => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
     overflowX: 'hidden',
-    width: theme.spacing(7) + 1,
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9) + 1,
-    },
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    background: '#6a868c',
-    ...theme.mixins.toolbar,
+    width: theme.spacing(7),
   },
   //close drawer buttn
   toggleButton:{
@@ -68,29 +60,17 @@ const useStyles = makeStyles(theme => ({
     right: 0,
   },
 
-
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-
 }));
 
 export default function SideDrawer(props) {
   const classes = useStyles(props);
   const theme = useTheme();
 
-  const [openNotes, setOpenNotes] = React.useState(false);
   const [openFiles, setOpenFiles] = React.useState(false);
   const [openDrawer, setOpenDrawer] = React.useState(true);
 
-  const handleClickNotes = () => {
-    setOpenNotes(!openNotes);
-    setOpenFiles(false);
-  };
-
-  const handleClickFiles = () => {
+  const handleAddFile = () => {
     setOpenFiles(!openFiles);
-    setOpenNotes(false);
   };
 
   const handleDrawerToggle = () => {
@@ -114,66 +94,37 @@ export default function SideDrawer(props) {
           }),
         }}
       >
-        
-        <div className={classes.toolbar}>
-        <Hidden only={['sm','md','lg','xl']}>
-          <ListItem button key='logo' >
-          <ListItemAvatar><Avatar src={logo} alt="Logo" /></ListItemAvatar>
-            <IconButton onClick={handleDrawerToggle} className={classes.toggleButton}>
-              <CloseIcon />
-            </IconButton>
-          </ListItem>
-        </Hidden>
-        <Hidden only={'xs'}>
-              <img src={logo} alt='Logo' width='100%' />
-              <IconButton onClick={handleDrawerToggle} className={classes.toggleButton}>
-                {openDrawer ? <ChevronLeftIcon /> : <ChevronRightIcon /> }
-              </IconButton>
-        </Hidden>
-        </div>
-        
+
+        <img src={logo} alt='Logo' width='100%' />
+        <IconButton onClick={handleDrawerToggle} className={classes.toggleButton}>
+          {openDrawer ? <ChevronLeftIcon /> : <ChevronRightIcon /> }
+        </IconButton>
+
         <Divider />
         <List>
-            <ListItem button key='add'>
+            <ListItem button key='add' component={RouterLink} to='/newNote' >
               <ListItemIcon><AddIcon /></ListItemIcon>
               <ListItemText primary='Add Note' />
             </ListItem>
+
+            <ListItem button key='home' component={RouterLink} to='/'>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary='Home' />
+            </ListItem>
   
-            <ListItem button key='notes' onClick={handleClickNotes}>
+
+            <ListItem button key='notes' component={RouterLink} to='/notes' >
               <ListItemIcon><NotesIcon /></ListItemIcon>
               <ListItemText primary='Notes' />
-              {openNotes ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
-            <Collapse in={openNotes} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItem button className={classes.nested}>
-                  <ListItemText primary="note.txt" secondary="27/03/2020  15:20"/>
-                </ListItem>
-                <ListItem button className={classes.nested}>
-                  <ListItemText primary="links" secondary="26/03/2020  18:00"/>
-                </ListItem>
-              </List>
-            </Collapse>
 
-            <ListItem button key='files' onClick={handleClickFiles}>
+            <ListItem button key='files' component={RouterLink} to='/files' >
               <ListItemIcon><PermMediaIcon /></ListItemIcon>
               <ListItemText primary='Files' />
-              {openFiles ? <ExpandLess /> : <ExpandMore />}
+              <IconButton component={RouterLink}  to='/files/upload' >
+                <AddIcon />
+              </IconButton>
             </ListItem>
-            <Collapse in={openFiles} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItem button className={classes.nested}>
-                  <ListItemText primary="plane.jpg" secondary="27/03/2020  12:20"/>
-                </ListItem>
-                <ListItem button className={classes.nested}>
-                  <ListItemText primary="logo.png" secondary="26/03/2020  18:30"/>
-                </ListItem>
-                <ListItem button className={classes.nested}>
-                  <ListItemText primary="logo.txt" secondary="20/03/2020  18:00"/>
-                </ListItem>
-              </List>
-            </Collapse>
-
         </List>
         <Divider />
         <List>
@@ -183,10 +134,7 @@ export default function SideDrawer(props) {
             </ListItem>
         </List>
       </Drawer>
-      
-      <main className={classes.content}>
         
-      </main>
     </div>
   );
 }

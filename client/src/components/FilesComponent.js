@@ -61,7 +61,7 @@ class Files extends Component {
       },
 
       uploadDialog: {
-        open: false,
+        open: null,
         handleClose: this.closeDialog('uploadDialog'),
         postFiles: this.props.postFiles
       },
@@ -72,6 +72,12 @@ class Files extends Component {
   componentDidMount() {
     // fetch files record from the server
     this.props.fetchFiles()
+
+    // if url is /file/upload open the upload dialog
+    if(this.props.upload){
+      this.openUploadDialog();
+    }
+    
   }
 
   /**

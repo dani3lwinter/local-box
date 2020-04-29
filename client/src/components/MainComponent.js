@@ -1,9 +1,11 @@
 import React,{Component} from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import BottomNav from './BottomNavComponent'
 import Home from './HomeComponent'
 import Notes from './NotesComponent'
 import EditNote from './EditNoteComponent'
 import Files from './FilesComponent'
+import SideDrawer from './DrawerComponent'
 import CssBaseline from '@material-ui/core/CssBaseline';
 import withWidth from "@material-ui/core/withWidth";
 import {
@@ -15,6 +17,19 @@ import { connect } from "react-redux";
 import {postNote, deleteNote, fetchNotes} from '../redux/ActionCreators/notesActions'
 import {setThemeDark, setThemeLight} from '../redux/ActionCreators/uiActions'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import Divider from '@material-ui/core/Divider';
+
+const styles =  (theme) => ({
+    root: {
+        display: 'flex',
+      },
+      content: {
+        flexGrow: 1,
+        //padding: theme.spacing(3),
+      },
+     
+});
 
 const mapStateToProps = state => ({
     ...state
@@ -22,6 +37,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     fetchNotes: () => dispatch(fetchNotes()),
+    postNote: (note) => dispatch(postNote(note)),
     setThemeDark: () => dispatch(setThemeDark()),
     setThemeLight: () => dispatch(setThemeLight()),
 });
@@ -74,38 +90,73 @@ class Main extends Component{
             postNote={this.props.postNote}/>
       );
   }
+
+  NotesPage = (props) => {
+      if(this.props.width === 'xs'){
+          return props.path === 'notes' ? <Notes notes={this.props.notes}/> : <EditNote/> 
+      }
+      else{
+          return(
+            <Grid container>
+                <Grid item xs={4}>
+                    <Notes notes={this.props.notes}/>
+                </Grid>
+                <Divider orientation="vertical" flexItem />
+                <Grid item xs={7}>
+                    { props.path === 'notes' ? null : <EditNote/> }
+                </Grid>
+            </Grid>
+          );
+      }
+  }
+
+  
   render(){
-    var theme = this.props.ui.theme === 'dark' ? darkTheme : lightTheme
+    var theme = this.props.ui.theme === 'dark' ? darkTheme : lightTheme;
+    const { classes } = this.props;
     // ISSUE: does not re render when theme changes
     return(
         <ThemeProvider theme={theme}>
             <Router>
                 <CssBaseline />
-                {/* {this.props.width === 'xs' ? <BottomNav /> : <SideDrawer /> } */}
+                <div className={classes.root}>
+                    {this.props.width === 'xs' ? <BottomNav /> : <SideDrawer /> }
                 
+                    {/* <SideDrawer /> */}
+                <div className={classes.content}>
                 <Switch>
                     
                     <Route path="/home">
                         <this.HomeWithProps/>
                     </Route>
+
                     <Route path='/notes/:noteId'>
-                        <EditNote/>
+                        <this.NotesPage path={'editNote'} />
                     </Route>
+
                     <Route exact path="/notes">
-                        <Notes notes={this.props.notes}/>
+                        <this.NotesPage path={'notes'} />
                     </Route>
                     
-                    <Route path="/editNote">
-                        <EditNote/>
+                    <Route path="/newNote">
+                        <this.NotesPage path={'newNote'} />
                     </Route>
+
+                    <Route path="/files/upload">
+                        <Files upload={true}/>
+                    </Route>
+
                     <Route path="/files">
                         <Files />
-                    </Route> 
+                    </Route>  
+
                     <Route path="/">
                         <this.HomeWithProps/>
                     </Route>
                 </Switch>
-                <BottomNav />
+                </div>
+                {/* <BottomNav /> */}
+                </div>
             </Router>     
         </ThemeProvider>
     );
@@ -116,4 +167,4 @@ class Main extends Component{
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-  )(withWidth()(Main));
+  )(withWidth()(withStyles(styles)(Main)));

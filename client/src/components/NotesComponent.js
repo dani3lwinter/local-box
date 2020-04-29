@@ -6,17 +6,17 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
-import EditIcon from '@material-ui/icons/Edit';
+
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import {Link as RouterLink, useRouteMatch} from "react-router-dom";
+import {Link as RouterLink} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
     root: {
       backgroundColor: theme.palette.background.paper,
       paddingBottom: (56 + theme.spacing(2))*2,
+      height: '100vh'
     },
     typographyTitle: {
       textAlign: 'left',
@@ -33,7 +33,6 @@ const useStyles = makeStyles(theme => ({
   }));
 
 const NotesList = ({notes}) => {
-  let match = useRouteMatch();
   const classes = useStyles();
 
   const timeFormater = new Intl.DateTimeFormat('default', {
@@ -58,30 +57,29 @@ const NotesList = ({notes}) => {
       return Math.floor(hours) + 'h ' + mins + 'min'
     }
   }
+
   return(
     <List>
       { notesItems.map(note => (
         <ListItem button divider key={note._id}
-          component={RouterLink} to={`${match.path}/${note._id}`}>
+          component={RouterLink} to={`/notes/${note._id}`}>
           <ListItemText
           primary={note.title}
           secondary={timeFormater.format(new Date(Date.parse(note.updatedAt)))}
           />
           <ListItemSecondaryAction>
-            {/* <IconButton edge="end" aria-label="edit">
-              <EditIcon />
-            </IconButton> */}
             <Typography variant="caption" className={classes.destructText} >
               Delete in<br/>
               {timeToLive(note.updatedAt, note.selfDestruct)}
-            </Typography>
-            
+            </Typography>   
           </ListItemSecondaryAction>
         </ListItem>
         )) } 
     </List>
   );
 }
+
+
 export default function Notes({notes}) {
     const classes = useStyles();
     return(
@@ -89,7 +87,7 @@ export default function Notes({notes}) {
         <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Notes</Typography>
         {notes.isLoading ? <LinearProgress />: <NotesList notes={notes} />}
         <Fab color="primary" aria-label="add" className={classes.fab}
-            component={RouterLink} to='/editNote'>
+            component={RouterLink} to='/newNote'>
           <AddIcon />
         </Fab>
       </div>
