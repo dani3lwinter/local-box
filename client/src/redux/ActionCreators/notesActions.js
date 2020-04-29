@@ -14,10 +14,10 @@ export const loadingNotes = loadingState => ({
   payload: loadingState
 })
 
-export const fetchNotes = () => dispatch => {
+export const fetchNotes = (id) => dispatch => {
     dispatch(loadingNotes(true))
-
-    return fetch(baseUrl + 'api/notes/', {
+    var url = id ? baseUrl + 'api/notes/' + id : baseUrl + 'api/notes/';
+    return fetch(url, {
         method:'GET',
         credentials: "same-origin"
     })
@@ -41,6 +41,8 @@ export const fetchNotes = () => dispatch => {
       dispatch(loadingNotes(false));
     });
 }
+
+
 
 export const loadNotes = notes => ({
     type: ActionTypes.LOAD_NOTES,

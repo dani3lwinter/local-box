@@ -21,8 +21,6 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    postNote: (note) => dispatch(postNote(note)),
-    deleteNote: (noteID) => dispatch(deleteNote(noteID)),
     fetchNotes: () => dispatch(fetchNotes()),
     setThemeDark: () => dispatch(setThemeDark()),
     setThemeLight: () => dispatch(setThemeLight()),
@@ -53,6 +51,7 @@ class Main extends Component{
   }
 
   componentDidMount() {
+    console.log('fetchNotes() in componentDidMount of Main')
     this.props.fetchNotes()
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         this.props.setThemeDark()
@@ -90,18 +89,14 @@ class Main extends Component{
                         <this.HomeWithProps/>
                     </Route>
                     <Route path='/notes/:noteId'>
-                        <EditNote notes={this.props.notes}
-                            postNote={this.props.postNote}
-                            deleteNote={this.props.deleteNote}/>
+                        <EditNote/>
                     </Route>
                     <Route exact path="/notes">
                         <Notes notes={this.props.notes}/>
                     </Route>
                     
                     <Route path="/editNote">
-                        <EditNote notes={this.props.notes}
-                            postNote={this.props.postNote}
-                            deleteNote={this.props.deleteNote}/>
+                        <EditNote/>
                     </Route>
                     <Route path="/files">
                         <Files />

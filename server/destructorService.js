@@ -80,7 +80,7 @@ async function destructOutdatedNotes(){
     // for every note in the DB
     notes.forEach(note => {
         // if the note has 'selfDestruct' field, check
-        if(note.selfDestruct){
+        if(note.selfDestruct && parseInt(note.selfDestruct) > 0 ){
             // check if the selfDestruct hours since updatedAt have passed 
             var destroyAt = new Date(note.updatedAt).addHours(note.selfDestruct);
             if( now > destroyAt ){

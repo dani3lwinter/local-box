@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { connect } from "react-redux";
+import { postNote, deleteNote } from '../redux/ActionCreators/notesActions'
+
 import Container from '@material-ui/core/Container';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -17,8 +20,6 @@ import { withRouter } from "react-router";
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 const styles = (theme) => ({
@@ -51,7 +52,18 @@ const styles = (theme) => ({
     },
 
   });
-function DelteDialog(props){
+  
+const mapDispatchToProps = dispatch => ({
+    postNote: (note) => dispatch(postNote(note)),
+    deleteNote: (noteID) => dispatch(deleteNote(noteID)),
+});
+
+const mapStateToProps = state => ({
+    notes: state.notes
+});
+
+  
+function DeleteDialog(props){
     return(
         <Dialog
             open={props.open}
@@ -71,45 +83,69 @@ function DelteDialog(props){
             </DialogActions>
         </Dialog>
       );
-    
 }
+
 class EditNote extends Component{
     constructor(props){
         super(props);
 
         this.state = {
             deleteDialogOpen: false,
-            selfDestruct: null,
+            selfDestruct: '8',
             title: '',
             content:'',
+            touched: false
         }
     }
+
+    /** Handler for self destruct field in the note */
     onChangeSelfDestruct = event => {
-        this.setState({selfDestruct: event.target.value});
+        this.setState({
+            selfDestruct: event.target.value,
+            touched: true
+        });
     };
+
+    /** Handler for titile of the noe */
     onChangeTitle = event => {
-        this.setState({title: event.target.value});
+        this.setState({
+            title: event.target.value,
+            touched: true
+        });
     };
+
+    /** Handler for the content field of the note */
     onChangeContent = event => {
-        this.setState({content: event.target.value});
+        this.setState({
+            content: event.target.value,
+            touched: true
+        });
     };
+
+    /** Handler when the users saves a note */
     onClickSave = event => {
+        // create the new note object
         const newNote = {
             title: this.state.title,
             content: this.state.content,
             selfDestruct: this.state.selfDestruct,
         }
+
+        // if editing existing note, add the id of the note to the new object
         const paramId =  this.props.match.params.noteId;
         if(paramId) newNote._id=paramId
+
+        // dispatch post note to redux and go back to the notes list
         this.props.postNote(newNote);
         this.props.history.goBack();
     };
 
+    /** Handler when the user click the trash\delete */
     onClickTrash = event => {
-        this.setState({deleteDialogOpen:true});
+        this.setState({ deleteDialogOpen:true });
     };
     
-    handleCloseSeleteDialog = () => {
+    handleCloseDeleteDialog = () => {
         this.setState({deleteDialogOpen:false});
     };
 
@@ -120,17 +156,32 @@ class EditNote extends Component{
         //this.setState({deleteDialogOpen:false});
     };
 
-    componentDidMount(){
-        const paramId =  this.props.match.params.noteId;
-        if(paramId){
-            let note = this.props.notes.items.filter(note => note._id===paramId)[0];
-            this.setState({
+    static getDerivedStateFromProps(nextProps, prevState) {
+        // if the notes list is still loading, dont change the state
+        if(nextProps.notes.isLoading)
+            return null;
+
+        // find the note to edit from the url param
+        const paramId = nextProps.match.params.noteId;
+        var note = nextProps.notes.items.filter(n => n._id===paramId)[0];
+        
+        // if no note found
+        if( paramId && !note ){
+            console.log('Note '+paramId+' Not Found')
+        }
+
+        // if the user didnt changed the note yet,
+        // load the note content from the store to the current state
+		if(!prevState.touched && note){
+			return {
                 selfDestruct: note.selfDestruct,
                 title: note.title,
                 content:note.content
-            });
-        }
-    }
+            };
+		 }
+		 else
+			return null;
+	}
     
     render() {
         const { classes } = this.props;
@@ -158,15 +209,15 @@ class EditNote extends Component{
                         onClick={this.onClickSave}>Save</Button>
                     <div className={classes.space}/>
                     <FormControl margin='dense' variant="outlined" className={classes.formControl}>
-                        {/* <InputLabel id="destruct-label">Self Destruct</InputLabel> */}
+                        <InputLabel id="destruct-label">Self Destruct</InputLabel>
                         <Select
                             labelId="destruct-label"
                             id="destructt"
                             value={this.state.selfDestruct}
                             onChange={this.onChangeSelfDestruct}
-                            //label="Self Destruct"
+                            label="Self Destruct"
                         >
-                            <MenuItem value={null}>Never</MenuItem>
+                            <MenuItem value='-1'>Never</MenuItem>
                             <MenuItem value='1'>1 Hour</MenuItem>
                             <MenuItem value='8'>8 Hours</MenuItem>
                             <MenuItem value='24'>24 Hours</MenuItem>
@@ -180,12 +231,16 @@ class EditNote extends Component{
                         </IconButton>
                     </CardActions>
                 </Card>
-                <DelteDialog
+                <DeleteDialog
                    open={this.state.deleteDialogOpen}
-                   handleClose={this.handleCloseSeleteDialog}
+                   handleClose={this.handleCloseDeleteDialog}
                    handleDelete={this.handleDelete} />
             </Container>
         );
     }
 }
-export default withStyles(styles)(withRouter(EditNote));
+// use redux actions and store
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(withStyles(styles)(withRouter(EditNote)));
