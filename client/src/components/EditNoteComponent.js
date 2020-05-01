@@ -90,6 +90,7 @@ class EditNote extends Component{
         super(props);
 
         this.state = {
+            id: null,
             deleteDialogOpen: false,
             selfDestruct: '8',
             title: '',
@@ -126,18 +127,15 @@ class EditNote extends Component{
     onClickSave = event => {
         // create the new note object
         const newNote = {
+            _id: this.state.id,
             title: this.state.title,
             content: this.state.content,
             selfDestruct: this.state.selfDestruct,
         }
 
-        // if editing existing note, add the id of the note to the new object
-        const paramId =  this.props.match.params.noteId;
-        if(paramId) newNote._id=paramId
-
         // dispatch post note to redux and go back to the notes list
         this.props.postNote(newNote);
-        this.props.history.goBack();
+        //this.props.history.goBack();
     };
 
     /** Handler when the user click the trash\delete */
@@ -152,7 +150,7 @@ class EditNote extends Component{
     handleDelete = () => {
         if(this.props.match.params.noteId)
             this.props.deleteNote(this.props.match.params.noteId)
-        this.props.history.goBack();
+        //this.props.history.goBack();
         //this.setState({deleteDialogOpen:false});
     };
 
@@ -161,26 +159,44 @@ class EditNote extends Component{
         if(nextProps.notes.isLoading)
             return null;
 
-        // find the note to edit from the url param
+        // get note id from url
         const paramId = nextProps.match.params.noteId;
-        var note = nextProps.notes.items.filter(n => n._id===paramId)[0];
-        
-        // if no note found
-        if( paramId && !note ){
-            console.log('Note '+paramId+' Not Found')
+
+        // if the url havnt changed
+        if( paramId === prevState.id){
+            // dont change the state
+            return null
         }
 
-        // if the user didnt changed the note yet,
-        // load the note content from the store to the current state
-		if(!prevState.touched && note){
-			return {
-                selfDestruct: note.selfDestruct,
-                title: note.title,
-                content:note.content
+        // if no id in the url, create empty note
+        if(!paramId){
+            return prevState.touched ? null : 
+            {
+                id: null,
+                selfDestruct: '8',
+                title: '',
+                content:'',
+                touched: false
             };
-		 }
-		 else
-			return null;
+        }
+
+        // find the note to edit from the url param
+        var note = nextProps.notes.items.filter(n => n._id===paramId)[0];
+        if( !note ){     // if no note found
+            alert('Note '+paramId+' Not Found');
+            return null;
+        }
+        else{
+            // load the note to state
+            return {
+                id:             note._id,
+                selfDestruct:   note.selfDestruct,
+                title:          note.title,
+                content:        note.content,
+                touched:        false
+            };
+        } 
+		
 	}
     
     render() {
@@ -188,7 +204,9 @@ class EditNote extends Component{
 
         return(
             <Container maxWidth="sm">
-                <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Edit</Typography>
+                <Typography variant="h4" gutterBottom className={classes.typographyTitle}>
+                    {this.props.match.path === "/newNote" ? 'New Note' : 'Edit'}
+                </Typography>
                 <Card variant="outlined">
                     <CardContent>
                         <TextField fullWidth id="title" label="Title" className={classes.title} 
