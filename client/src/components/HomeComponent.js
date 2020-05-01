@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ErrorComp from './ErrorComponent';
 import Typography from '@material-ui/core/Typography'
 import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
@@ -86,46 +87,54 @@ class Home extends Component{
 	isLoading(){
 		return (this.props.notes.isLoading === undefined || this.props.notes.isLoading);
 	}
+
+	HomeNote = (props) => {
+		return(
+			<Card className={props.classes.card} variant="outlined">
+				<CardContent>
+				<TextField  fullWidth
+						id="content"
+						placeholder="Type something..."
+						multiline
+						rows="16"
+						InputProps={{ className: props.classes.underline }} 
+						onChange={this.onChangeContent} value={this.state.content}
+					/>
+					{/* <textarea className={classes.textarea} placeholder='Type something...'
+						onChange={e => this.updateInput(e.target.value)} value={this.state.input} >
+					</textarea> */}
+				</CardContent>
+				<CardActions className={props.classes.cardActions}>
+					<Button variant="contained" color="primary"
+						onClick={this.onClickSave}>
+						Save
+					</Button>
+					<Button color="primary" onClick={this.onClickClear}>
+						Clear
+					</Button>
+				</CardActions>
+			</Card>
+		);
+	}
+	
 	render() {
+
 		const { classes } = this.props;
-			return(
-				<Container maxWidth="sm">
-					<Backdrop className={classes.backdrop} open={this.props.notes.isLoading}>
-						<CircularProgress color="inherit" />
-					</Backdrop>
-					<IconButton onClick={this.props.handleThemeToggle} className={classes.themeButton}>
-						<Brightness4Icon />
-					</IconButton>
-					<Typography variant="h2" gutterBottom className={classes.typographyTitle}>Local Box</Typography>
-					<Card className={classes.card} variant="outlined">
-						<CardContent>
-						{/*this.isLoading() ? <CircularProgress /> : null */}
-						<TextField  fullWidth
-								id="content"
-								placeholder="Type something..."
-								multiline
-								rows="16"
-								InputProps={{ className: classes.underline }} 
-								onChange={this.onChangeContent} value={this.state.content}
-							/>
-							{/* <textarea className={classes.textarea} placeholder='Type something...'
-								onChange={e => this.updateInput(e.target.value)} value={this.state.input} >
-							</textarea> */}
-						</CardContent>
-						<CardActions className={classes.cardActions}>
-							<Button variant="contained" color="primary"
-								onClick={this.onClickSave}>
-								Save
-							</Button>
-							<Button color="primary" onClick={this.onClickClear}>
-								Clear
-							</Button>
-						</CardActions>
-					</Card>
-				</Container>
-			);
-		//}
-		
+		return(
+			<Container maxWidth="sm">
+				<Backdrop className={classes.backdrop} open={this.props.notes.isLoading}>
+					<CircularProgress color="inherit" />
+				</Backdrop>
+				<IconButton onClick={this.props.handleThemeToggle} className={classes.themeButton}>
+					<Brightness4Icon />
+				</IconButton>
+				<Typography variant="h2" gutterBottom className={classes.typographyTitle}>Local Box</Typography>
+				{ this.props.notes.error
+					? <ErrorComp error={this.props.notes.error}/>
+					: <this.HomeNote classes={classes}/> }
+			</Container>
+		);
+
 	}
 }
 export default withStyles(styles)(Home);
