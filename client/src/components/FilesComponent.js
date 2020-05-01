@@ -1,5 +1,6 @@
-import React, { Component, Fragment } from 'react';
-import FilesGrid from './FilesGridComponent'
+import React, { Component } from 'react';
+import FilesGrid from './FilesGridComponent';
+import ErrorComp from './ErrorComponent';
 import Typography from '@material-ui/core/Typography'
 import Container from '@material-ui/core/Container';
 import { withStyles } from '@material-ui/core/styles';
@@ -147,6 +148,17 @@ class Files extends Component {
 
   render() {
     const { classes } = this.props;
+
+    
+    if( this.props.files.error !== null ){
+      return(
+        <div className={classes.root}>
+          <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Files</Typography>
+          <ErrorComp error={this.props.files.error}/>
+        </div>
+      );
+    }
+
     return (
       <Container className={classes.root} maxWidth='sm'>
         <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Files</Typography>

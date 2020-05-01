@@ -8,6 +8,11 @@ export const loadingFiles = loadingState => ({
   payload: loadingState
 })
 
+export const errorFiles = error => ({
+  type: ActionTypes.ERROR_FILES,
+  payload: error
+})
+
 export const fetchFiles = () => dispatch => {
     dispatch(loadingFiles(true))
 
@@ -29,7 +34,10 @@ export const fetchFiles = () => dispatch => {
     })
   .then(response => response.json())
   .then(json => dispatch(loadFiles(json)))
-  .catch(error =>  { console.log('get files', error.message); alert('Unable to get files\nError: '+error.message); });
+  .catch(error =>  { 
+    error.type = 'connection';
+    dispatch(errorFiles(error));
+  });
         
 }
 
@@ -68,7 +76,11 @@ export const deleteFile = (fileID) => (dispatch) => {
       })
     .then(response => response.json())
     .then(response => dispatch(deleteFileFromStore(response._id)))
-    .catch(error =>  { console.log('delete file', error.message); alert('Unable to delete file\nError: '+error.message); });
+    .catch(error =>  { 
+      error.type = 'connection';
+      error.message = 'Unable to delete file\nError: '+error.message;
+      dispatch(errorFiles(error));
+    });
 }
 
 export const postFiles = (uploadForm) => (dispatch) => {
@@ -101,8 +113,9 @@ export const postFiles = (uploadForm) => (dispatch) => {
   .then(response => response.json())
   .then(response => dispatch(addFile(response)))
   .catch(error =>  { 
-      console.log('post file', error.message);
-      alert('Your file could not be posted\nError: '+error.message);
+      error.type = 'connection';
+      error.message = 'Your file could not be posted\nError: '+error.message;
+      dispatch(errorFiles(error));
   });
    
 };

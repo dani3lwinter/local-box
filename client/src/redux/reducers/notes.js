@@ -3,6 +3,14 @@ import * as ActionTypes from '../actionTypes';
 export default function(state = {items:[],isLoading: true, error:null}, action) {
     switch (action.type) {
 
+      case ActionTypes.ERROR_NOTES: {
+        return {
+            ...state,
+            error: action.payload,
+            isLoading: false
+        };
+      }
+
       case ActionTypes.ADD_NOTE: {
         return {
             ...state,

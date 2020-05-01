@@ -1,5 +1,6 @@
 import React,{Component} from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import ErrorBoundary from './ErrorBoundary'
 import BottomNav from './BottomNavComponent'
 import Home from './HomeComponent'
 import Notes from './NotesComponent'
@@ -14,7 +15,7 @@ import {
     Route
   } from "react-router-dom";
 import { connect } from "react-redux";
-import {postNote, deleteNote, fetchNotes} from '../redux/ActionCreators/notesActions'
+import {postNote, fetchNotes} from '../redux/ActionCreators/notesActions'
 import {setThemeDark, setThemeLight} from '../redux/ActionCreators/uiActions'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -102,7 +103,7 @@ class Main extends Component{
                     <Notes notes={this.props.notes}/>
                 </Grid>
                 <Divider orientation="vertical" flexItem />
-                <Grid item xs={7}>
+                <Grid item xs={7}>          
                     { props.path === 'notes' ? null : <EditNote/> }
                 </Grid>
             </Grid>
@@ -121,41 +122,39 @@ class Main extends Component{
                 <CssBaseline />
                 <div className={classes.root}>
                     {this.props.width === 'xs' ? <BottomNav /> : <SideDrawer /> }
-                
-                    {/* <SideDrawer /> */}
-                <div className={classes.content}>
-                <Switch>
-                    
-                    <Route path="/home">
-                        <this.HomeWithProps/>
-                    </Route>
+                    <div className={classes.content}>
+                    <ErrorBoundary>
+                    <Switch>
+                        <Route path="/home">
+                            <this.HomeWithProps/>
+                        </Route>
 
-                    <Route path='/notes/:noteId'>
-                        <this.NotesPage path={'editNote'} />
-                    </Route>
+                        <Route path='/notes/:noteId'>
+                            <this.NotesPage path={'editNote'} />
+                        </Route>
 
-                    <Route exact path="/notes">
-                        <this.NotesPage path={'notes'} />
-                    </Route>
-                    
-                    <Route path="/newNote">
-                        <this.NotesPage path={'newNote'} />
-                    </Route>
+                        <Route exact path="/notes">
+                            <this.NotesPage path={'notes'} />
+                        </Route>
+                        
+                        <Route path="/newNote">
+                            <this.NotesPage path={'newNote'} />
+                        </Route>
 
-                    <Route path="/files/upload">
-                        <Files upload={true}/>
-                    </Route>
+                        <Route path="/files/upload">
+                            <Files upload={true}/>
+                        </Route>
 
-                    <Route path="/files">
-                        <Files />
-                    </Route>  
+                        <Route path="/files">
+                            <Files />
+                        </Route>  
 
-                    <Route path="/">
-                        <this.HomeWithProps/>
-                    </Route>
-                </Switch>
-                </div>
-                {/* <BottomNav /> */}
+                        <Route path="/">
+                            <this.HomeWithProps/>
+                        </Route>
+                    </Switch>
+                    </ErrorBoundary>
+                    </div>
                 </div>
             </Router>     
         </ThemeProvider>

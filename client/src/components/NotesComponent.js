@@ -1,6 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles';
+import ErrorComp from './ErrorComponent'
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -29,7 +30,17 @@ const useStyles = makeStyles(theme => ({
     },
     destructText: {
       color: theme.palette.error.light,
-    }
+    },
+
+    img: {
+      maxWidth:'300px',
+      width: '100%'
+   },
+   errorText: {
+      textAlign: 'left',
+      padding: '8px'
+   },
+
   }));
 
 const NotesList = ({notes}) => {
@@ -82,6 +93,17 @@ const NotesList = ({notes}) => {
 
 export default function Notes({notes}) {
     const classes = useStyles();
+
+    if( notes.error !== null ){
+      // render the error component instead of the notes list
+      return(
+        <div className={classes.root}>
+          <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Notes</Typography>
+          <ErrorComp error={notes.error}/>
+        </div>
+      );
+    }
+
     return(
       <div className={classes.root}>
         <Typography variant="h4" gutterBottom className={classes.typographyTitle}>Notes</Typography>

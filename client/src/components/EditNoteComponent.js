@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import { postNote, deleteNote } from '../redux/ActionCreators/notesActions'
+import ErrorComp from './ErrorComponent'
 
 import Container from '@material-ui/core/Container';
 import Card from '@material-ui/core/Card';
@@ -150,8 +151,8 @@ class EditNote extends Component{
     handleDelete = () => {
         if(this.props.match.params.noteId)
             this.props.deleteNote(this.props.match.params.noteId)
-        //this.props.history.goBack();
-        //this.setState({deleteDialogOpen:false});
+        this.props.history.goBack();
+        this.setState({deleteDialogOpen:false});
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -167,7 +168,7 @@ class EditNote extends Component{
             // dont change the state
             return null
         }
-
+        
         // if no id in the url, create empty note
         if(!paramId){
             return prevState.touched ? null : 
@@ -183,8 +184,7 @@ class EditNote extends Component{
         // find the note to edit from the url param
         var note = nextProps.notes.items.filter(n => n._id===paramId)[0];
         if( !note ){     // if no note found
-            alert('Note '+paramId+' Not Found');
-            return null;
+            return {noteNotFound: true};
         }
         else{
             // load the note to state
@@ -200,6 +200,18 @@ class EditNote extends Component{
 	}
     
     render() {
+
+        if(this.state.noteNotFound){
+            const paramId = this.props.match.params.noteId;
+            const error = new Error('Could not find note with id ' + paramId);
+            return(
+                <div>
+                    <br /><br />
+                    <ErrorComp error={error}/>
+                </div>
+            );
+        }
+
         const { classes } = this.props;
 
         return(

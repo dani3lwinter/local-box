@@ -2,8 +2,6 @@ import * as ActionTypes from '../actionTypes';
 import { baseUrl } from '../../baseUrl';
 // Action Creators:
 
-
-
 export const editNote = (note) => ({
     type: ActionTypes.EDIT_NOTE,
     payload: note
@@ -12,6 +10,11 @@ export const editNote = (note) => ({
 export const loadingNotes = loadingState => ({
   type: ActionTypes.LOADING_STATE_NOTES,
   payload: loadingState
+})
+
+export const errorNotes = error => ({
+  type: ActionTypes.ERROR_NOTES,
+  payload: error
 })
 
 export const fetchNotes = (id) => dispatch => {
@@ -36,9 +39,8 @@ export const fetchNotes = (id) => dispatch => {
     .then(response => response.json())
     .then(json => dispatch(loadNotes(json)))
     .catch(error =>  {
-      console.log('get notes', error.message);
-      alert('Unable to get notes\nError: '+error.message);
-      dispatch(loadingNotes(false));
+      error.type = 'connection';
+      dispatch(errorNotes(error));
     });
 }
 
@@ -80,9 +82,9 @@ export const deleteNote = (noteID) => (dispatch) => {
     .then(response => response.json())
     .then(response => dispatch(deleteNoteFromStore(noteID)))
     .catch(error =>  { 
-      console.log('delete note', error.message);
-      alert('Unable to delete note\nError: '+error.message); 
-      dispatch(loadingNotes(false));
+      error.type = 'connection';
+      error.message = 'Unable to delete note.\nError: '+error.message;
+      dispatch(errorNotes(error));
     });
 }
 
@@ -113,9 +115,9 @@ export const postNote = (note) => (dispatch) => {
     .then(response => response.json())
     .then(response => note._id ? dispatch(editNote(response)) : dispatch(addNote(response)))
     .catch(error =>  {
-      console.log('post note', error.message);
-      alert('Your note could not be posted\nError: '+error.message);
-      dispatch(loadingNotes(false))
+      error.type = 'connection';
+      error.message = 'Your note could not be posted.\nError: '+error.message;
+      dispatch(errorNotes(error));
     });
 };
 
