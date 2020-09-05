@@ -1,6 +1,9 @@
 # Local-Box
 Store files and notes on a local website, and access them within other devices on the same network.
 
+## [**Live Demo**](https://dani3lwinter.github.io/local-box/)
+
+
 ## Requirements
 - [**Node.js**](https://nodejs.org/)
 - [**mongoDB**](https://www.mongodb.com/)
