@@ -4,7 +4,7 @@ module.exports = {
     'corsAllowOrigins': [
         'http://localhost',
         'https://localhost',
-        'http://192.168.1.12',
-        'https://192.168.1.12'
+        'http://192.168.1.12:3000',
+        'https://192.168.1.12:3000'
     ]
 }

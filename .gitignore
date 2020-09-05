@@ -1,6 +1,7 @@
 server/node_modules
 client/node_modules
 server/uploads
+server/public
 client/build
 backup
 mongoDB
