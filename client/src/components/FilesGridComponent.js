@@ -52,9 +52,9 @@ const FILE_KNOWN_EXT = ['ACC', 'AE', 'AI', 'AN', 'AVI', 'BMP', 'CSV', 'DAT', 'DG
 function filenameToExtImg(filename) {
     const ext = filename.split('.').pop().toUpperCase();
     if (FILE_KNOWN_EXT.find(e => e === ext))
-        return '/img/file-extensions/' + ext + '.png';
+        return '/local-box/img/file-extensions/' + ext + '.png';
     else
-        return '/img/file-extensions/FILE.png'
+        return '/local-box/img/file-extensions/FILE.png'
 }
 
 /**
