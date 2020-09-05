@@ -1,6 +1,7 @@
 {
   "name": "local-air",
   "version": "0.1.0",
+  "homepage": "https://dani3lwinter.github.io/local-box",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.10",
@@ -19,6 +20,8 @@
     "typeface-roboto": "0.0.75"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d demo",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
