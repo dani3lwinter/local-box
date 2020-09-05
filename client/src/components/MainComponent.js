@@ -118,7 +118,7 @@ class Main extends Component{
     // ISSUE: does not re render when theme changes
     return(
         <ThemeProvider theme={theme}>
-            <Router>
+            <Router basename="/local-box">
                 <CssBaseline />
                 <div className={classes.root}>
                     {this.props.width === 'xs' ? <BottomNav /> : <SideDrawer /> }
